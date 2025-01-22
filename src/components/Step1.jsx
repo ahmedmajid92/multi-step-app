@@ -1,29 +1,49 @@
+// Import React hooks:
+// - useContext: To access shared state from the context.
+// - useState: To manage local state for the email validation error.
 import React, { useContext, useState } from 'react';
+
+// Import the `useNavigate` for programmatic navigation.
 import { useNavigate } from 'react-router-dom';
+
+// Import `FormContext` to access and update the global form state.
 import { FormContext } from '../context/FormContext';
-import ProgressBar from './ProgressBar'; // Import ProgressBar
+
+// Import the `ProgressBar` component to display the step progress.
+import ProgressBar from './ProgressBar'; 
 
 const Step1 = () => {
+    // Destructure `formData` (global form state) and `updateFormData` (function to update the state) from `FormContext`.
     const { formData, updateFormData } = useContext(FormContext);
+
+    // Initialize the `navigate` function to transition between routes.
     const navigate = useNavigate();
+
+    // Declare a local state variable `emailError` to store validation errors for the email field.
     const [emailError, setEmailError] = useState('');
 
+    // Determine if the "Next" button should be disabled, if any required field is empty.
+    const isNextDisabled = !formData.name || !formData.email || !formData.gender;
+
+    // Handle the "Next" button click event.
     const handleNext = () => {
         if (!formData.name || !formData.email || !formData.gender) {
-        alert('Please fill in all fields.');
-        return;
+            alert('Please fill in all fields.'); // Alert the user if required fields are missing.
+            return;
         }
         if (!validateEmail(formData.email)) {
-        setEmailError('Please enter a valid email address.');
-        return;
+            // Validate the email format using the `validateEmail` function.
+            setEmailError('Please enter a valid email address.');
+            return; // Stop navigation if the email is invalid.
         }
-        setEmailError('');
-        navigate('/step2');
+        setEmailError(''); // Clear any existing email error.
+        navigate('/step2'); // Navigate to Step 2.
     };
 
     const validateEmail = (email) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email regex
-        return emailRegex.test(email);
+        // Validate the email format using a regular expression.
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
+        return emailRegex.test(email); // Return true if the email matches the regex.
     };
 
     return (
@@ -91,7 +111,12 @@ const Step1 = () => {
             <button
             type="button"
             onClick={handleNext}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 hover:text-stone-400"
+            disabled={isNextDisabled} // Dynamically disable button
+            className={`px-4 py-2 rounded ${
+                isNextDisabled
+                ? 'bg-gray-400 text-gray-800 cursor-not-allowed'
+                : 'bg-blue-500 text-white hover:bg-blue-700 hover:text-stone-400'
+            }`}
             >
             Next
             </button>

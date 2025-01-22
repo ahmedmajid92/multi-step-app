@@ -56,6 +56,11 @@ Routing is handled by **React Router**, with each step mapped to a specific rout
 
 ---
 
+### Why LocalStorage?
+localStorage persists data even after the browser is closed, so users can continue where they left off.
+
+---
+
 ## Installation
 
 1. Clone the repository:

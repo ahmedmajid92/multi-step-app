@@ -1,46 +1,58 @@
-import React, { useContext, useEffect, useState } from 'react';
+// Import React hooks
+import React, { useContext, useEffect } from 'react';
+
+// Import `useNavigate` from React Router for programmatic navigation.
 import { useNavigate } from 'react-router-dom';
+
+// Import `FormContext` to access and update the global form state.
 import { FormContext } from '../context/FormContext';
-import ProgressBar from './ProgressBar'; // Import ProgressBar
+
+// Import the `ProgressBar` component to display the step progress.
+import ProgressBar from './ProgressBar';
 
 const Step2 = () => {
+    // Destructure `formData` (global form state) and `updateFormData` (function to update state) from `FormContext`.
     const { formData, updateFormData } = useContext(FormContext);
-    const navigate = useNavigate();
-    const [preferencesList, setPreferencesList] = useState([]);
 
-    // Update preferences list based on gender
-    useEffect(() => {
-        if (formData.gender === 'male') {
-        setPreferencesList(['Science', 'Sports', 'Business', 'Cars']);
-        } else if (formData.gender === 'female') {
-        setPreferencesList(['Arts', 'Travel', 'Shopping', 'Food']);
-        }
-    }, [formData.gender]);
+    // Initialize the `navigate` function for programmatic routing.
+    const navigate = useNavigate();
+
+    // Determine if the "Next" button should be disabled. It depends only on the address field.
+    const isNextDisabled = !formData.address;
 
     const handleNext = () => {
-        if (!formData.address || !formData.preferences || formData.preferences.length === 0) {
-        alert('Please fill in all fields and select at least one preference.');
-        return;
-        }
-        navigate('/step3');
+        navigate('/step3'); // Navigate to Step 3.
     };
 
     const handleBack = () => navigate('/step1');
+    // Navigate back to Step 1 when the "Back" button is clicked.
 
+    // Handle checkbox state for preferences.
     const handlePreferenceChange = (preference) => {
         const updatedPreferences = formData.preferences.includes(preference)
-        ? formData.preferences.filter((p) => p !== preference) // Remove if already selected
-        : [...formData.preferences, preference]; // Add if not selected
+        ? formData.preferences.filter((p) => p !== preference)  // Remove the preference if it is already selected.
+        : [...formData.preferences, preference];   // Add the preference if it is not selected.
+        
+        // Update the preferences in the global `formData` state.
         updateFormData('preferences', updatedPreferences);
     };
 
+    const preferencesList =
+        formData.gender === 'male'
+        ? ['Science', 'Sports', 'Business', 'Cars']
+        : ['Arts', 'Travel', 'Shopping', 'Food'];  // Dynamically generate the preferences list based on the user's gender. 
+
     return (
         <div className="h-screen justify-center items-center text-center p-6 bg-slate-200">
+        
         <div className="mb-20">
-            <ProgressBar step={2} /> {/* ProgressBar */}
+            <ProgressBar step={2} /> 
         </div>
+
         <h2 className="text-2xl font-bold mb-4">Step 2: Additional Information</h2>
+
         <form className="flex flex-col items-center justify-center">
+
             {/* Address Field */}
             <div className="mb-4 w-96 text-left">
             <label className="block text-sm font-medium mb-2 ml-2">Address</label>
@@ -80,13 +92,21 @@ const Step2 = () => {
             >
                 Back
             </button>
+            {/* "Back" button navigates to Step 1. */}
+
             <button
                 type="button"
                 onClick={handleNext}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 hover:text-stone-400"
+                disabled={isNextDisabled}
+                className={`px-4 py-2 rounded ${
+                isNextDisabled
+                    ? 'bg-gray-400 text-gray-800 cursor-not-allowed'
+                    : 'bg-blue-500 text-white hover:bg-blue-700 hover:text-stone-400'
+                }`}
             >
                 Next
             </button>
+            {/* "Next" button navigates to Step 3 if the address field is filled. */}
             </div>
         </form>
         </div>
