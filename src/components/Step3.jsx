@@ -1,5 +1,5 @@
 // Import React hooks
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 
 // Import the `useNavigate` hook from React Router for programmatic navigation.
 import { useNavigate } from 'react-router-dom';
@@ -8,51 +8,45 @@ import { useNavigate } from 'react-router-dom';
 import { FormContext } from '../context/FormContext';
 
 // Import the `ProgressBar` component to display the step progress.
-import ProgressBar from './ProgressBar'; 
+import ProgressBar from './ProgressBar';
 
 const Step3 = () => {
     // Destructure `formData` from `FormContext` to access the submitted form data.
     const { formData } = useContext(FormContext);
-
     // Initialize the `navigate` function for routing.
     const navigate = useNavigate();
-    
-    // Local state to track if the form has been submitted.
-    const [isSubmitted, setIsSubmitted] = useState(false);
 
-    // Handle the form submission.
+    // Track submission status using sessionStorage to persist across page reloads
+    const [isSubmitted, setIsSubmitted] = useState(() => {
+        const savedStatus = sessionStorage.getItem('isSubmitted');
+        return savedStatus === 'true'; // Convert string to boolean
+    });
+
+    // Ensure the submit button is disabled after submission
+    const [isButtonDisabled, setIsButtonDisabled] = useState(isSubmitted);
+
+    // Update submission state in sessionStorage on change
+    useEffect(() => {
+        sessionStorage.setItem('isSubmitted', isSubmitted.toString());
+    }, [isSubmitted]);
+
     const handleSubmit = () => {
-        setIsSubmitted(true); 
+        setIsSubmitted(true); // Mark as submitted
+        setIsButtonDisabled(true); // Disable the submit button
+        console.log('Form data submitted:', formData);
 
-        // console.log('Form Data:', formData);        
-
-        setTimeout(() => {
-            navigate('/step1'); 
-            // Redirect back to Step 1 after 2 seconds.
-        }, 2000);
+        // Optionally, you can add additional logic here for API calls or processing
     };
 
-    // Helper function to reset form data
-    const resetFormData = () => {
-        updateFormData('name', '');
-        updateFormData('email', '');
-        updateFormData('gender', '');
-        updateFormData('address', '');
-        updateFormData('preferences', []);
-    };
+    const handleBack = () => navigate('/step2'); // Navigate to Step 2
 
-    // Navigate back to Step 2 when the "Back" button is clicked.
-    const handleBack = () => navigate('/step2');
-    
     return (
-        <div className="h-screen justify-center items-center text-center p-6 bg-slate-200">
-
+        <div className="h-screen justify-center items-center text-center p-6 bg-stone-100">
         <div className="mb-20">
-            <ProgressBar step={3} /> 
+            <ProgressBar step={3} />
         </div>
 
         {!isSubmitted ? (
-            // Render the review screen if the form has not been submitted.
             <div className="flex flex-col items-center justify-center">
             <h2 className="text-2xl font-bold mb-10">Step 3: Review and Submit</h2>
 
@@ -60,7 +54,10 @@ const Step3 = () => {
             <div className="mb-4 w-96 text-center">
                 <h3 className="font-bold">Basic Information</h3>
                 <p>
-                <strong>Name:</strong> {formData.name}
+                <strong>First Name:</strong> {formData.fname}
+                </p>
+                <p>
+                <strong>Last Name:</strong> {formData.lname}
                 </p>
                 <p>
                 <strong>Email:</strong> {formData.email}
@@ -76,7 +73,19 @@ const Step3 = () => {
                 <p>
                 <strong>Address:</strong> {formData.address}
                 </p>
-                <h4 className="font-bold">Preferences:</h4>
+                <p>
+                <strong>Country:</strong> {formData.country}
+                </p>
+                <p>
+                <strong>City:</strong> {formData.city}
+                </p>
+                <p>
+                <strong>Region:</strong> {formData.region}
+                </p>
+                <p>
+                <strong>Company:</strong> {formData.company}
+                </p>
+                <h4 className="font-bold mt-4">Preferences:</h4>
                 <ul className="list-disc list-inside">
                 {formData.preferences.map((preference, index) => (
                     <li key={index}>{preference}</li>
@@ -97,14 +106,18 @@ const Step3 = () => {
                 <button
                 type="button"
                 onClick={handleSubmit}
-                className="bg-green-500 text-white px-4 py-2 rounded hover:text-stone-600 hover:bg-green-400"
+                disabled={isButtonDisabled} // Disable the button if already submitted
+                className={`px-4 py-2 rounded ${
+                    isButtonDisabled
+                    ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
+                    : 'bg-green-500 text-white hover:text-stone-600 hover:bg-green-400'
+                }`}
                 >
                 Submit
                 </button>
             </div>
             </div>
         ) : (
-            // Render the thank-you message after the form has been submitted.
             <div className="text-center">
             <h2 className="text-2xl font-bold text-green-500 mb-4">Thank you!</h2>
             <p>Your data has been submitted successfully.</p>

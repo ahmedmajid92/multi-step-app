@@ -1,69 +1,73 @@
-// Import necessary React utilities:
-// - createContext: To create a new context for state management
-// - useState: To manage the form state
-// - useEffect: To perform side effects such as loading data from storage
-import React, { createContext, useState, useEffect } from 'react'; 
+import React, { createContext, useState, useEffect } from 'react';
 
-// Create a new context 
-export const FormContext = createContext(); 
+// Create a new context
+export const FormContext = createContext();
 
-  // Define a provider component that will wrap the app and provide access to the context
-export const FormProvider = ({ children }) => { 
-
-    // Initialize the state to store form data.
+// Define a provider component
+export const FormProvider = ({ children }) => {
+    // Initialize formData from sessionStorage
     const [formData, setFormData] = useState(() => {
-        const savedData = localStorage.getItem('formData');
-        return savedData ? JSON.parse(savedData) : {
-            name: '',            // User's name field.
-            email: '',           // User's email field.
-            gender: '',          // User's gender selection ('male' or 'female').
-            address: '',         // User's address field.
-            preferences: [],     // User's selected preferences (stored as an array of strings).
-        };
+        const savedData = sessionStorage.getItem('formData');
+        return savedData
+            ? JSON.parse(savedData)
+            : {
+                fname: '',
+                lname: '',
+                email: '',
+                gender: '',
+                address: '',
+                country: '',
+                city: '',
+                region: '',
+                company: '',
+                preferences: [],
+            };
     });
 
-    // Use useEffect to persist formData in localStorage whenever it changes
+    // Sync formData to sessionStorage on changes
     useEffect(() => {
-        // Save formData to localStorage whenever it changes
-        localStorage.setItem('formData', JSON.stringify(formData));
-    }, [formData]); // Dependency array: only run this effect when formData changes
+        sessionStorage.setItem('formData', JSON.stringify(formData));
+    }, [formData]);
 
-    const [currentStep, setCurrentStep] = useState(1);
-
-    // Function to update the form data dynamically based on the provided key and value.
     const updateFormData = (key, value) => {
-        
         setFormData((prev) => {
-        
-        // Reset the `preferences` field to an empty array
-        if (key === 'gender' && prev.gender !== value) {
-            return { ...prev, gender: value, preferences: [] };
-        }
+            // Reset preferences when gender changes
+            if (key === 'gender' && prev.gender !== value) {
+                return { ...prev, gender: value, preferences: [] };
+            }
 
-        // For all other updates, spread the existing state and update the specified key with the new value.
-        return { ...prev, [key]: value };
+            return { ...prev, [key]: value };
         });
     };
 
     const validateStep = (step) => {
         switch (step) {
             case 1:
-                return formData.name.trim() !== '' && formData.email.trim() !== '';
+                return formData.fname.trim() !== '' && formData.email.trim() !== '';
             case 2:
-                return formData.gender !== '' && formData.address.trim() !== '';
+                return (
+                    formData.address.trim() !== '' &&
+                    formData.country.trim() !== '' &&
+                    formData.city.trim() !== '' &&
+                    formData.region.trim() !== '' &&
+                    formData.company.trim() !== ''
+                );
+            case 3:
+                return true;
             default:
                 return true;
         }
     };
+
+    const [currentStep, setCurrentStep] = useState(1);
 
     const goToStep = (step) => {
         if (step >= 1 && step <= 3) setCurrentStep(step);
     };
 
     return (
-        // `FormContext.Provider` provides access to `formData` (state) and `updateFormData` (updater function).
         <FormContext.Provider value={{ formData, updateFormData, validateStep, currentStep, goToStep }}>
-        {children} 
+            {children}
         </FormContext.Provider>
     );
 };

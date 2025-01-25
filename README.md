@@ -56,8 +56,8 @@ Routing is handled by **React Router**, with each step mapped to a specific rout
 
 ---
 
-### Why LocalStorage?
-localStorage persists data even after the browser is closed, so users can continue where they left off.
+### Why SessionStorage?
+SessionStorage persists data only for the duration of the browser session. This ensures that user data is retained during navigation or page reloads within the same session but is cleared once the browser tab is closed.
 
 ---
 

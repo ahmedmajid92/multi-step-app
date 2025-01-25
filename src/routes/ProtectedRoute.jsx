@@ -1,39 +1,54 @@
-// Import React and the `useContext` hook to access the global state from the context.
-import React, { useContext } from 'react'; 
-
-// Import `Navigate` to programmatically redirect users if they attempt to access restricted routes.
-import { Navigate } from 'react-router-dom'; 
-
-// Import the `FormContext` to check the current state of form data.
-import { FormContext } from '../context/FormContext'; 
+import React, { useContext } from 'react';
+import { Navigate } from 'react-router-dom';
+import { FormContext } from '../context/FormContext';
 
 const ProtectedRoute = ({ children, step }) => {
-    // `children` refers to the component(s) rendered if access is allowed.
-    // `step` specifies the current step of the form, used to determine access.
-
-    // Access the `formData` from the global context to check which fields are filled.
     const { formData } = useContext(FormContext);
 
-    // A helper function to validate whether the required fields for a step are filled.
+    // Validation logic for each step
     const isStepValid = () => {
+        // Step 1: Always accessible
+        if (step === 1) return true;
 
-        // Step 1 is always accessible, so it returns true without checking form data.
-        if (step === 1) return true; 
-        
-        // Step 2 is accessible only if `name`, `email`, and `gender` are filled.
-        if (step === 2) return formData.name && formData.email && formData.gender; 
-        
-        // Step 3 is accessible only if `name`, `email`, `gender`, and `address` are filled.
-        if (step === 3) return formData.name && formData.email && formData.gender && formData.address; 
-        
-        // For any other step, access is denied by default.
-        return false; 
-        
+        // Step 2: Require all Step 1 fields to be filled
+        if (step === 2) {
+        return (
+            formData.fname &&
+            formData.lname &&
+            formData.email &&
+            formData.phone &&
+            formData.birthday &&
+            formData.gender
+        );
+        }
+
+        // Step 3: Require Step 1 and Step 2 fields to be filled
+        if (step === 3) {
+        return (
+            formData.fname &&
+            formData.lname &&
+            formData.email &&
+            formData.phone &&
+            formData.birthday &&
+            formData.gender &&
+            formData.address &&
+            formData.preferences.length > 0
+        );
+        }
+
+        // Deny access to any unknown steps
+        return false;
     };
 
-    // If the current step is valid, render the child components, Otherwise, redirect the user to Step 1.
-    return isStepValid() ? children : <Navigate to="/step1" />;
-    
+    // Redirect to the appropriate step if the current step is invalid
+    if (!isStepValid()) {
+        // Redirect to the last valid step
+        if (step === 2) return <Navigate to="/step1" replace />;
+        if (step === 3) return <Navigate to="/step2" replace />;
+    }
+
+    // Render the child components if the current step is valid
+    return children;
 };
 
-export default ProtectedRoute; 
+export default ProtectedRoute;
